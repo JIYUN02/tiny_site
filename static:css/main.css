@@ -1,0 +1,122 @@
+/* 기본 스타일 */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+
+main {
+    flex: 1;
+}
+
+/* 상품 카드 스타일링 */
+.product-card {
+    transition: transform 0.3s ease;
+    height: 100%;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.product-image {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.product-price {
+    font-weight: bold;
+    color: #28a745;
+}
+
+/* 채팅 스타일 */
+.chat-container {
+    height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.chat-message {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    max-width: 80%;
+    word-break: break-word;
+}
+
+.message-sent {
+    background-color: #d1e7ff;
+    margin-left: auto;
+}
+
+.message-received {
+    background-color: #f0f0f0;
+    margin-right: auto;
+}
+
+.message-meta {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+/* 지갑 및 트랜잭션 스타일 */
+.balance-card {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    color: white;
+}
+
+.transaction-item {
+    transition: background-color 0.2s;
+}
+
+.transaction-item:hover {
+    background-color: #f8f9fa;
+}
+
+.transaction-amount {
+    font-weight: bold;
+}
+
+.transaction-amount.positive {
+    color: #28a745;
+}
+
+.transaction-amount.negative {
+    color: #dc3545;
+}
+
+/* 관리자 대시보드 스타일 */
+.admin-stat-card {
+    border-left: 4px solid;
+    border-bottom: none;
+    border-top: none;
+    border-right: none;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.admin-stat-card.card-users {
+    border-left-color: #4e73df;
+}
+
+.admin-stat-card.card-products {
+    border-left-color: #1cc88a;
+}
+
+.admin-stat-card.card-reports {
+    border-left-color: #f6c23e;
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+    .product-card {
+        margin-bottom: 20px;
+    }
+}

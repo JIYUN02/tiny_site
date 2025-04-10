@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}채팅 - {{ chat_partner.username }}{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                {{ chat_partner.username }}님과의 채팅
+            </div>
+            <div class="card-body">
+                <div class="chat-container" id="chatContainer">
+                    {% for msg in messages %}
+                        {% if msg.sender_id == session.user_id %}
+                            <div class="chat-message my-message">
+                                <div><strong>나:</strong> {{ msg.message }}</div>
+                                <small>{{ msg.timestamp }}</small>
+                            </div>
+                        {% else %}
+                            <div class="chat-message other-message">
+                                <div><strong>{{ msg.sender_name }}:</strong> {{ msg.message }}</div>
+                                <small>{{ msg.timestamp }}</small>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <form method="post" action="{{ url_for('send_private_message') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="receiver_id" value="{{ chat_partner.id }}">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="message" placeholder="메시지를 입력하세요..." required>
+                        <button class="btn btn-primary" type="submit">전송</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        
+        const socket = io();
+        const messageContainer = chatContainer; 
+        const messageForm = document.querySelector('form'); 
+        const messageInput = document.querySelector('input[name="message"]'); // 기존 메시지 입력 필드 사용
+        const senderId = "{{ session.user_id }}";
+        const receiverId = "{{ chat_partner.id }}";
+        
+        // 서버에 연결
+        socket.on('connect', function() {
+            console.log('Socket.IO 연결됨');
+            
+            // 채팅방 입장 시 메시지를 읽음 처리
+            socket.emit('mark_as_read', {sender_id: receiverId});
+        });
+        
+        // 새 메시지 수신
+        socket.on('new_private_message', function(data) {
+            if ((data.sender_id === senderId && data.receiver_id === receiverId) || 
+                (data.sender_id === receiverId && data.receiver_id === senderId)) {
+                
+                // 메시지 요소 생성
+                const messageDiv = document.createElement('div');
+                messageDiv.className = data.sender_id === senderId ? 'chat-message my-message' : 'chat-message other-message';
+                
+                const messageContent = document.createElement('div');
+                if (data.sender_id === senderId) {
+                    messageContent.innerHTML = '<strong>나:</strong> ' + data.message;
+                } else {
+                    messageContent.innerHTML = '<strong>' + data.sender_name + ':</strong> ' + data.message;
+                }
+                
+                const messageTime = document.createElement('small');
+                messageTime.innerText = data.timestamp;
+                
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(messageTime);
+                messageContainer.appendChild(messageDiv);
+                
+                // 스크롤을 아래로 이동
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+                
+                // 상대방 메시지는 읽음 처리
+                if (data.sender_id === receiverId) {
+                    socket.emit('mark_as_read', {sender_id: receiverId});
+                }
+            }
+        });
+        
+        // 메시지 읽음 상태 업데이트
+        socket.on('messages_read', function(data) {
+            if (data.sender_id === senderId && data.receiver_id === receiverId) {
+                // 읽음 상태 표시 업데이트
+                const unreadIndicators = document.querySelectorAll('.message-unread');
+                unreadIndicators.forEach(function(indicator) {
+                    indicator.classList.remove('message-unread');
+                    indicator.classList.add('message-read');
+                    indicator.innerText = '읽음';
+                });
+            }
+        });
+        
+        // 메시지 전송
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+            
+            if (message) {
+                // 소켓을 통해 메시지 전송
+                socket.emit('private_message', {
+                    receiver_id: receiverId,
+                    message: message
+                });
+                
+                // 입력 필드 초기화
+                messageInput.value = '';
+            }
+        });
+    });
+</script>
+{% endblock %}

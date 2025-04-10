@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}홈{% endblock %}
+
+{% block content %}
+<div class="jumbotron mt-4">
+    <h1 class="display-4">마켓 서비스에 오신 것을 환영합니다!</h1>
+    <p class="lead">다양한 상품을 거래하고 페이 서비스를 통해 안전하게 결제하세요.</p>
+    <hr class="my-4">
+    <p>지금 바로 시작하세요!</p>
+    <div class="d-flex">
+        {% if not session.user_id %}
+        <a class="btn btn-primary btn-lg me-2" href="{{ url_for('register') }}" role="button">회원가입</a>
+        <a class="btn btn-secondary btn-lg" href="{{ url_for('login') }}" role="button">로그인</a>
+        {% else %}
+        <a class="btn btn-primary btn-lg" href="{{ url_for('dashboard') }}" role="button">대시보드로 이동</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">상품 거래</h5>
+                <p class="card-text">다양한 상품을 올리고 거래할 수 있습니다.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">페이 서비스</h5>
+                <p class="card-text">안전한 결제 시스템으로 편리하게 거래하세요.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">1:1 채팅</h5>
+                <p class="card-text">판매자와 구매자 간의 원활한 소통을 도와드립니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

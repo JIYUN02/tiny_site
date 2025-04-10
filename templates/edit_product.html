@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}상품 수정{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>상품 수정</h2>
+    <div class="card">
+        <div class="card-body">
+            <form action="{{ url_for('edit_product', product_id=product.id) }}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="title" class="form-label">제목</label>
+                    <input type="text" class="form-control" id="title" name="title" value="{{ product.title }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">상품 설명</label>
+                    <textarea class="form-control" id="description" name="description" rows="5" required>{{ product.description }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="price" class="form-label">가격 (원)</label>
+                    <input type="text" class="form-control" id="price" name="price" value="{{ product.price }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label">이미지</label>
+                    {% if product.image_path %}
+                    <div class="mb-2">
+                        <img src="{{ url_for('static', filename=product.image_path) }}" alt="현재 이미지" style="max-height: 200px;">
+                        <p class="text-muted">현재 이미지입니다. 변경하려면 새 이미지를 업로드하세요.</p>
+                    </div>
+                    {% endif %}
+                    <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png">
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is_sold" name="is_sold" value="1" {% if product.is_sold == 1 %}checked{% endif %}>
+                        <label class="form-check-label" for="is_sold">
+                            판매완료
+                        </label>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('view_product', product_id=product.id) }}" class="btn btn-secondary">취소</a>
+                    <button type="submit" class="btn btn-primary">수정하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

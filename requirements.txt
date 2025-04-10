@@ -1,0 +1,5 @@
+Flask==2.0.1
+Flask-SocketIO==5.1.1
+Flask-WTF==0.15.1
+Werkzeug==2.0.1
+bleach==4.1.0

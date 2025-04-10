@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}송금 요청{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>송금 요청</h2>
+    <div class="card">
+        <div class="card-body">
+            <form action="{{ url_for('request_money') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="receiver_username" class="form-label">받는 사람 (사용자명)</label>
+                    <input type="text" class="form-control" id="receiver_username" name="receiver_username" required value="{{ request.args.get('receiver', '') }}">
+                </div>
+                <div class="mb-3">
+                    <label for="amount" class="form-label">금액 (원)</label>
+                    <input type="number" class="form-control" id="amount" name="amount" required min="0" step="1">
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">메시지</label>
+                    <textarea class="form-control" id="message" name="message" rows="3" placeholder="송금 요청 이유를 입력하세요."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">요청하기</button>
+                <a href="{{ url_for('wallet') }}" class="btn btn-secondary">취소</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

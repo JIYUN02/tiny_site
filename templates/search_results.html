@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}검색 결과{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>검색 결과</h2>
+    <div class="card mb-4">
+        <div class="card-header">
+            <form action="{{ url_for('search_products') }}" method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="query" class="form-control" placeholder="검색어" value="{{ query }}">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="min_price" class="form-control" placeholder="최소 가격" value="{{ min_price }}">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" name="max_price" class="form-control" placeholder="최대 가격" value="{{ max_price }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="sort_by" class="form-select">
+                        <option value="title" {% if sort_by == 'title' %}selected{% endif %}>제목순</option>
+                        <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>가격 낮은순</option>
+                        <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>가격 높은순</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">검색</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if products %}
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if product.image_path %}
+                <img src="{{ url_for('static', filename=product.image_path) }}" class="card-img-top" alt="{{ product.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="bg-light text-center p-5">이미지 없음</div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.title }}</h5>
+                    <p class="card-text text-truncate">{{ product.description }}</p>
+                    <p class="card-text"><strong>가격:</strong> {{ product.price }}원</p>
+                    <p class="card-text"><small class="text-muted">판매자: {{ product.seller_name }}</small></p>
+                    {% if product.is_sold == 1 %}
+                    <span class="badge bg-danger">판매완료</span>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('view_product', product_id=product.id) }}" class="btn btn-primary">상세보기</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        검색 결과가 없습니다.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

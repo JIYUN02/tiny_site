@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}페이{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">내 페이</div>
+            <div class="card-body">
+                <h2>현재 잔액: {{ wallet.balance }}원</h2>
+                <form method="post" action="{{ url_for('charge_wallet') }}" class="mt-3">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="input-group mb-3">
+                        <input type="number" class="form-control" name="amount" placeholder="충전할 금액" min="1000" step="1000" required>
+                        <button class="btn btn-primary" type="submit">충전하기</button>
+                    </div>
+                </form>
+                <a href="{{ url_for('send_money') }}" class="btn btn-success mt-2">송금하기</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">최근 거래 내역</div>
+            <div class="card-body">
+                {% if transactions %}
+                <div class="list-group">
+                    {% for tx in transactions %}
+                    <div class="list-group-item">
+                        {% if tx.sender_id == session.user_id %}
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6>{{ tx.receiver_name }}에게 송금</h6>
+                                <small>{{ tx.timestamp }}</small>
+                            </div>
+                            <div class="text-danger">-{{ tx.amount }}원</div>
+                        </div>
+                        {% else %}
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6>{{ tx.sender_name }}에게서 수신</h6>
+                                <small>{{ tx.timestamp }}</small>
+                            </div>
+                            <div class="text-success">+{{ tx.amount }}원</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if tx.message %}
+                        <p class="mb-1 mt-2">메시지: {{ tx.message }}</p>
+                        {% endif %}
+                        
+                        {% if tx.sender_id == session.user_id and tx.status == 'completed' %}
+                        <form method="post" action="{{ url_for('cancel_transaction', transaction_id=tx.id) }}" class="mt-2">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">취소하기</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>거래 내역이 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

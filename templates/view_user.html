@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.username }} 프로필{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>{{ user.username }} 프로필</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    {% if user.bio %}
+                    <h5>소개</h5>
+                    <p>{{ user.bio }}</p>
+                    {% else %}
+                    <p class="text-muted">소개글이 없습니다.</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-4 text-end">
+                    {% if session.user_id != user.id %}
+                    <a href="{{ url_for('private_chat', user_id=user.id) }}" class="btn btn-primary mb-2">
+                        <i class="bi bi-chat"></i> 채팅하기
+                    </a>
+                    <a href="{{ url_for('send_money') }}?receiver={{ user.username }}" class="btn btn-success mb-2">
+                        <i class="bi bi-cash"></i> 송금하기
+                    </a>
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#requestMoneyModal">
+                        <i class="bi bi-cash-coin"></i> 송금 요청
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4>판매 중인 상품</h4>
+    {% if products %}
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if product.image_path %}
+                <img src="{{ url_for('static', filename=product.image_path) }}" class="card-img-top" alt="{{ product.title }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="bg-light text-center p-5">이미지 없음</div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.title }}</h5>
+                    <p class="card-text text-truncate">{{ product.description }}</p>
+                    <p class="card-text"><strong>가격:</strong> {{ product.price }}원</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('view_product', product_id=product.id) }}" class="btn btn-primary">상세보기</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        판매 중인 상품이 없습니다.
+    </div>
+    {% endif %}
+</div>
+
+<!-- 송금 요청 모달 -->
+<div class="modal fade" id="requestMoneyModal" tabindex="-1" aria-labelledby="requestMoneyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestMoneyModalLabel">{{ user.username }}님에게 송금 요청</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('request_money') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <input type="hidden" name="receiver_username" value="{{ user.username }}">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">금액 (원)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" required min="0" step="1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="message" class="form-label">메시지</label>
+                        <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-primary">요청하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

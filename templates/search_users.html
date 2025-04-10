@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>사용자 검색</h2>
+    
+    <form action="{{ url_for('search_users') }}" method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" name="query" placeholder="사용자 이름 검색" value="{{ query }}">
+            <button class="btn btn-primary" type="submit">검색</button>
+        </div>
+    </form>
+    
+    {% if query %}
+        <div class="search-results">
+            <h4>"{{ query }}" 검색 결과: {{ users|length }}명</h4>
+            
+            {% if users %}
+                <div class="row">
+                    {% for user in users %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ user.username }}</h5>
+                                    <p class="card-text">{{ user.bio }}</p>
+                                    <a href="{{ url_for('view_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">프로필 보기</a>
+                                    <a href="{{ url_for('private_chat', user_id=user.id) }}" class="btn btn-sm btn-outline-success">메시지 보내기</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>검색 결과가 없습니다.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

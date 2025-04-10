@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}대시보드{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>내 판매 상품</h2>
+            <div class="mb-3">
+                <a href="{{ url_for('new_product') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> 상품 등록하기
+                </a>
+            </div>
+            <!-- dashboard.html 파일 내 적절한 네비게이션 영역에 추가 -->
+            {% if session.role == 'admin' %}
+            <div class="admin-access">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">관리자 페이지</a>
+            </div>
+            {% endif %}
+            {% if products %}
+            <div class="row">
+                {% for product in products %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        {% if product.image_path %}
+                        <img src="{{ url_for('static', filename=product.image_path) }}" class="card-img-top" alt="{{ product.title }}" style="height: 150px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light text-center p-4">이미지 없음</div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.title }}</h5>
+                            <p class="card-text text-truncate">{{ product.description }}</p>
+                            <p class="card-text"><strong>가격:</strong> {{ product.price }}원</p>
+                            {% if product.is_sold == 1 %}
+                            <span class="badge bg-danger">판매완료</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('view_product', product_id=product.id) }}" class="btn btn-sm btn-primary">상세보기</a>
+                                <div>
+                                    <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn btn-sm btn-warning">수정</a>
+                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ product.id }}">삭제</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 상품 삭제 모달 -->
+                <div class="modal fade" id="deleteModal{{ product.id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">상품 삭제 확인</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                "{{ product.title }}" 상품을 정말 삭제하시겠습니까?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                                <form action="{{ url_for('delete_product', product_id=product.id) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-danger">삭제</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                등록한 상품이 없습니다. 지금 상품을 등록해보세요!
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>내 계정</h5>
+                </div>
+                <div class="card-body">
+                    <h5>{{ user.username }}</h5>
+                    <p>{{ user.bio or '소개글이 없습니다.' }}</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('mypage') }}" class="btn btn-outline-primary">프로필 수정</a>
+                        <a href="{{ url_for('wallet') }}" class="btn btn-outline-success">지갑 관리</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">최근 채팅</h5>
+                    <a href="{{ url_for('chat_list') }}" class="btn btn-sm btn-primary">
+                        모두 보기
+                        {% if unread_messages > 0 %}
+                        <span class="badge bg-danger">{{ unread_messages }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_chats %}
+                    <ul class="list-group">
+                        {% for chat in recent_chats %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('private_chat', user_id=chat.chat_partner_id) }}" class="text-decoration-none">
+                                {{ chat.chat_partner_name }}
+                            </a>
+                            <small class="text-muted">{{ chat.last_message_time }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted">최근 채팅 내역이 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

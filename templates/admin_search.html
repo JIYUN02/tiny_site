@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}통합 검색 - 관리자{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>통합 검색</h1>
+    
+    <form action="{{ url_for('admin_search') }}" method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="query" class="form-control" value="{{ query }}" placeholder="검색어 입력...">
+            <select name="type" class="form-select" style="max-width: 120px;">
+                <option value="all" {% if type == 'all' %}selected{% endif %}>전체</option>
+                <option value="user" {% if type == 'user' %}selected{% endif %}>사용자</option>
+                <option value="product" {% if type == 'product' %}selected{% endif %}>상품</option>
+            </select>
+            <button type="submit" class="btn btn-primary">검색</button>
+        </div>
+    </form>
+    
+    {% if results %}
+        {% if type in ['all', 'user'] and results.users %}
+            <h2>사용자 검색 결과</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>아이디</th>
+                            <th>사용자명</th>
+                            <th>소개</th>
+                            <th>신고수</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in results.users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td><a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.username }}</a></td>
+                            <td>{{ user.bio|default('소개 없음', true) }}</td>
+                            <td>{{ user.report_count }}</td>
+                            <td>
+                                {% if user.is_active == 1 %}
+                                    <span class="badge bg-success">활성</span>
+                                {% else %}
+                                    <span class="badge bg-danger">비활성</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                        관리
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <form action="{{ url_for('admin_user_action', user_id=user.id) }}" method="post">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="action" value="{% if user.is_active == 1 %}deactivate{% else %}activate{% endif %}">
+                                                <button type="submit" class="dropdown-item">
+                                                    {% if user.is_active == 1 %}비활성화{% else %}활성화{% endif %}
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form action="{{ url_for('admin_user_action', user_id=user.id) }}" method="post">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="action" value="clear_reports">
+                                                <button type="submit" class="dropdown-item">신고 초기화</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form action="{{ url_for('admin_user_action', user_id=user.id) }}" method="post">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="action" value="delete">
+                                                <button type="submit" class="dropdown-item" onclick="return confirm('이 사용자를 삭제하시겠습니까? 모든 관련 데이터가 함께 삭제됩니다.');">삭제</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        
+        {% if type in ['all', 'product'] and results.products %}
+            <h2>상품 검색 결과</h2>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>제목</th>
+                            <th>가격</th>
+                            <th>판매자</th>
+                            <th>신고수</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in results.products %}
+                        <tr>
+                            <td>{{ product.id }}</td>
+                            <td><a href="{{ url_for('view_product', product_id=product.id) }}">{{ product.title }}</a></td>
+                            <td>{{ product.price }}</td>
+                            <td><a href="{{ url_for('view_user', user_id=product.seller_id) }}">{{ product.seller_name }}</a></td>
+                            <td>{{ product.report_count }}</td>
+                            <td>
+                                {% if product.is_sold == 0 %}
+                                    <span class="badge bg-success">판매중</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">판매완료</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                        관리
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <form action="{{ url_for('admin_product_action', product_id=product.id) }}" method="post">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="action" value="toggle_sold">
+                                                <button type="submit" class="dropdown-item">
+                                                    {% if product.is_sold == 0 %}판매완료 처리{% else %}판매중 처리{% endif %}
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form action="{{ url_for('admin_product_action', product_id=product.id) }}" method="post">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="action" value="clear_reports">
+                                                <button type="submit" class="dropdown-item">신고 초기화</button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <form action="{{ url_for('admin_product_action', product_id=product.id) }}" method="post">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="action" value="delete">
+                                                <button type="submit" class="dropdown-item" onclick="return confirm('이 상품을 삭제하시겠습니까?');">삭제</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+        
+        {% if (type == 'all' and not results.users and not results.products) or 
+              (type == 'user' and not results.users) or
+              (type == 'product' and not results.products) %}
+            <div class="alert alert-info">검색 결과가 없습니다.</div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

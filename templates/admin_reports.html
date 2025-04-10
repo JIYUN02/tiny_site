@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}신고 관리 - 관리자 페이지{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>신고 관리</h2>
+    
+    <nav aria-label="관리자 메뉴" class="mb-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin_dashboard') }}">대시보드</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin_users') }}">사용자 관리</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin_products') }}">상품 관리</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('admin_reports') }}">신고 관리</a>
+            </li>
+        </ul>
+    </nav>
+    
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">전체 신고 목록</h5>
+            <span class="badge bg-primary">총 {{ reports|length }}건</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>신고 ID</th>
+                            <th>신고자</th>
+                            <th>대상</th>
+                            <th>사유</th>
+                            <th>관리</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td>{{ report.id }}</td>
+                            <td>
+                                <a href="{{ url_for('view_user', user_id=report.reporter_id) }}">{{ report.reporter_name }}</a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('view_user', user_id=report.target_id) }}">{{ report.target_name }}</a>
+                            </td>
+                            <td>{{ report.reason }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <!-- 사용자에게 적용할 조치 버튼 -->
+                                    <form action="{{ url_for('admin_report_action', report_id=report.id) }}" method="post" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" name="action" value="process" class="btn btn-sm btn-warning">사용자 비활성화</button>
+                                    </form>
+                                    <!-- 기존 버튼들 옆에 반려 버튼 추가 -->
+                                    <form action="{{ url_for('admin_report_action', report_id=report.id) }}" method="post" style="display:inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="action" value="reject">
+                                        <button type="submit" class="btn btn-warning">반려</button>
+                                    </form>
+                                    
+                                    <!-- 나중에 필요한 경우 신고 삭제 버튼 추가 가능 -->
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
